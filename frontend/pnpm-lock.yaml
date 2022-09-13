@@ -18,6 +18,7 @@ specifiers:
   eslint-plugin-simple-import-sort: ^7.0.0
   eslint-plugin-unused-imports: ^1.1.5
   eslint-plugin-vue: ^7.20.0
+  ky: ^0.31.1
   postcss: 8.4.14
   tailwindcss: 3.0.24
   typescript: 4.5.4
@@ -28,6 +29,7 @@ specifiers:
 
 dependencies:
   daisyui: 2.15.0_ugi4xkrfysqkt4c4y6hkyfj344
+  ky: 0.31.1
   vue: 3.2.25
   vue-router: 4.0.15_vue@3.2.25
 
@@ -1885,6 +1887,11 @@ packages:
     dependencies:
       minimist: 1.2.6
     dev: true
+
+  /ky/0.31.1:
+    resolution: {integrity: sha512-wha6TXwen/+4aeHGn8oyHWTQdukT/JZew4mmu2KiCFKn1NHCXiWpeBhGDVFiIX9FN7wsfSkV0C8yZ6YRKE/w4Q==}
+    engines: {node: '>=14.16'}
+    dev: false
 
   /levn/0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
