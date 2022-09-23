@@ -8,3 +8,8 @@ export enum ImageStyle {
     RUNES = 7,
     SHAPE = 8
 }
+
+export interface GenerateImageStyleRequestBody {
+    user_prompt: string
+    image_style: number
+}

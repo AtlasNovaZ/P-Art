@@ -120,8 +120,8 @@
           <!-- <div>
             <button class="btn btn-square loading p-20 rounded-2xl bg-purple-400"></button>
           </div> -->
-          <div id="app">
-          </div>
+          <!-- <div id="app">
+          </div> -->
 
         </div>
       </div>
@@ -133,14 +133,11 @@
 
 <script lang="ts">
 import { products } from '../constants'
-import { ref, Ref, defineComponent } from 'vue'
+import { ref, Ref, defineComponent, onMounted } from 'vue'
 import ky from 'ky'
-
-
 
 export default defineComponent({
   setup() {
-    const axios = require('axios').default;
     const prompt: Ref<string> = ref('')
     const selectedStyle: Ref<number> = ref(1)
     // const styles: Ref<string> = ref(products[3].imagestyle)
@@ -155,64 +152,34 @@ export default defineComponent({
       } else {
         selectedStyle.value = styleId
       }
-      console.log(selectedStyle.value)
-
     }
-    // const onFileSelected = (ev: Event) => {
-    //   console.log(ev)
-    //   console.log('upload pass')
-    //   const target = ev.target as HTMLInputElement
-    //   selectedFile.value = target.files == null ? null : target.files[0]
-
-    // }
 
     const sendRequest = async () => {
-      // if (selectedFile.value == null) {
-      //   return
-      // }
+      // const form = new FormData()
+      // form.append('prompt_text', prompt.value)
+      // form.append('style', products.values.toString())
 
-      const image = new FormData()
-      // image.append('base_image', selectedFile.value, selectedFile.value.toString())
-
-      const form = new FormData()
-      // form.append('base_image', selectedFile.value, selectedFile.value.toString())
-      form.append('prompt_text', prompt.value)
-      form.append('style', products.values.toString())
-
-      const response = await ky.post('http://127.0.0.1:8000/gen', {
+      // const response = await ky.post('http://127.0.0.1:8000/gen', {
+      //   json: {
+      //     prompt: prompt.value,
+      //     style: products[selectedStyle.value - 1].imagestyle
+      //   }
+      // }).json()
+      const genImageResp = await ky.post('http://127.0.0.1:8000/generate-image', {
         json: {
-          prompt: prompt.value,
-          style: products[selectedStyle.value - 1].imagestyle
+          image_style: 1,
+          user_prompt: 'hi'
+        },
+        headers: {
+          'Content-Type': 'application/json'
         }
       }).json()
 
-      axios.post('/user', {
-        firstName: 'Fred',
-        lastName: 'Flintstone'
-      })
-        .then(function (response) {
-          console.log(response);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-
-      // const responseimage = await ky.post('http://localhost:8000/genimage', {
-      //   body: image
-      // }).json()
-
-      console.log(response)
-      // console.log(responseimage)
-
-      const imagedresponse = await ky.get('http://localhost:8000', {
-      }).blob();
-
-      console.log(imagedresponse)
-      returnedImage.value = imagedresponse
-
+      console.log(genImageResp)
     }
 
-
+    onMounted(async () => {
+    })
 
     return {
       products,
@@ -220,8 +187,6 @@ export default defineComponent({
       sendRequest,
       onStyleClicked,
       selectedStyle,
-      // selectedFile,
-      //onFileSelected,
       returnedImage
     }
   }
