@@ -1,0 +1,17 @@
+{
+    "editor.autoIndent": "brackets",
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": true,
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "editor.renderFinalNewline": true,
+    "[vue]": {
+        "editor.tabSize": 2
+    },
+    "[python]": {
+        "editor.tabSize": 4
+    },
+    "[typescript]": {
+        "editor.tabSize": 2
+    }
+}

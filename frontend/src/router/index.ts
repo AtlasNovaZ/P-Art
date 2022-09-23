@@ -12,6 +12,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'About',
     path: '/about',
     component: Pages.About
+  },
+  {
+    name: 'Show Generated Image',
+    path: '/generate/:generatedImageId',
+    component: Pages.Generated
   }
 ]
 

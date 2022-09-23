@@ -120,19 +120,56 @@
 </template>
 
 <script lang="ts">
-import { products } from '../constants'
 import { ref, Ref, defineComponent, onMounted } from 'vue'
+import { products } from '../constants'
 import ky from 'ky'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 export default defineComponent({
+  name: 'generated',
   setup() {
-    const router = useRouter()
     const prompt: Ref<string> = ref('')
-    const selectedStyle: Ref<number> = ref(1)
+    const generatedIdSession: Ref<string> = ref('')
+    const selectedStyle: Ref<number> = ref(0)
     const selectedFile: Ref<File | null> = ref(null)
 
-    const generatedIdSession = ref('')
+    const router = useRouter()
+    const route = useRoute()
+
+    const ws = new WebSocket(`wss://localhost:8000/generate-image/${1123}/ws`)
+
+    if (ws.onopen != null) {
+      // @ts-expect-error
+      ws.onopen((ev) => {
+        console.log('successfully connected to api')
+      })
+    }
+
+    if (ws.onerror != null) {
+      // @ts-expect-error
+      ws.onerror(function (ev) {
+        console.log('something happened')
+      })
+    }
+
+    if (ws.onmessage != null) {
+      // @ts-expect-error
+      ws.onmessage(function (ev) {
+        console.log(ev.data)
+      })
+    }
+
+    if (ws.onclose != null) {
+      // @ts-expect-error
+      ws.onclose(function (ev) {
+        console.log('connection closed')
+      })
+    }
+
+    onMounted(() => {
+      const params = route.params
+      generatedIdSession.value = params.generatedImageId as string
+    })
 
     const onStyleClicked = (styleId: number): void => {
       if (styleId === selectedStyle.value) {
@@ -197,17 +234,17 @@ export default defineComponent({
           generatedImageId: generatedIdSession.value
         }
       })
+
     }
 
     return {
       products,
       prompt,
+      selectedStyle,
       sendRequest,
       onStyleClicked,
-      selectedStyle,
       onFileSelected
     }
   }
 })
 </script>
-
