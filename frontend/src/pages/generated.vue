@@ -136,7 +136,7 @@ export default defineComponent({
     const router = useRouter()
     const route = useRoute()
 
-    const ws = new WebSocket(`wss://localhost:8000/generate-image/${1123}/ws`)
+    const ws = new WebSocket(`wss://127.0.0.1:8000/generate-image/${1123}/ws`)
 
     if (ws.onopen != null) {
       // @ts-expect-error
