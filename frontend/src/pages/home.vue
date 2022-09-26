@@ -114,14 +114,18 @@
         <div class="basis-2/5 grid grid-cols grid-rows justify-center justify-items-center bg-slate-900/80 rounded-3xl">
           <h1 class="text-4xl text-white pt-5 font-bold ">Your artwork</h1>
           <!-- <img src="" class=" bg-gray-100 rounded-lg animate-spin" /> -->
-          <img src="returnedImage" />
+          <!-- <img src="http://localhost:8000/gen?lastmod=12345678" /> -->
+          <img :src="src">
 
 
           <!-- <div>
             <button class="btn btn-square loading p-20 rounded-2xl bg-purple-400"></button>
           </div> -->
-          <div id="app">
-          </div>
+          <button @click="download()"
+            class="justify-center px-11 mt-2 m-3 b rounded-3xl text-white bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+
+            <h1 class="text-xl text-white font-bold ">Download</h1>
+          </button>
 
         </div>
       </div>
@@ -135,12 +139,14 @@
 import { products } from '../constants'
 import { ref, Ref, defineComponent } from 'vue'
 import ky from 'ky'
+import axios from 'axios';
+
+
 
 
 
 export default defineComponent({
   setup() {
-    const axios = require('axios').default;
     const prompt: Ref<string> = ref('')
     const selectedStyle: Ref<number> = ref(1)
     // const styles: Ref<string> = ref(products[3].imagestyle)
@@ -167,48 +173,57 @@ export default defineComponent({
     // }
 
     const sendRequest = async () => {
+
+
+
+      // var ws = new WebSocket("ws://localhost:8000/ws");
+      // ws.onmessage = function (event) {
+
+      // };
+      // function sendMessage(event) {
+      //   var input = document.getElementById("messageText")
+      //   ws.send(input.value)
+      //   input.value = ''
+      //   event.preventDefault()
+      // }
       // if (selectedFile.value == null) {
       //   return
       // }
 
-      const image = new FormData()
+      // const image = new FormData()
       // image.append('base_image', selectedFile.value, selectedFile.value.toString())
 
-      const form = new FormData()
-      // form.append('base_image', selectedFile.value, selectedFile.value.toString())
-      form.append('prompt_text', prompt.value)
-      form.append('style', products.values.toString())
+      // const form = new FormData()
+      // // form.append('base_image', selectedFile.value, selectedFile.value.toString())
+      // form.append('prompt_text', prompt.value)
+      // form.append('style', products.values.toString())
 
       const response = await ky.post('http://127.0.0.1:8000/gen', {
+        onDownloadProgress: (progress, chunk) => {
+          // Example output:
+          // `0% - 0 of 1271 bytes`
+          // `100% - 1271 of 1271 bytes`
+          console.log(`${progress.percent * 100}% - ${progress.transferredBytes} of ${progress.totalBytes} bytes`);
+        },
+        timeout: false,
         json: {
           prompt: prompt.value,
           style: products[selectedStyle.value - 1].imagestyle
         }
       }).json()
 
-      axios.post('/user', {
-        firstName: 'Fred',
-        lastName: 'Flintstone'
-      })
-        .then(function (response) {
-          console.log(response);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-
-      // const responseimage = await ky.post('http://localhost:8000/genimage', {
+      // const responseimage = await ky.get('http://localhost:8000/gen', {
       //   body: image
       // }).json()
 
       console.log(response)
       // console.log(responseimage)
 
-      const imagedresponse = await ky.get('http://localhost:8000', {
+      const imagedresponse = await ky.get('http://localhost:8000/gen', {
       }).blob();
 
       console.log(imagedresponse)
-      returnedImage.value = imagedresponse
+      // returnedImage.value = imagedresponse
 
     }
 
@@ -224,7 +239,45 @@ export default defineComponent({
       //onFileSelected,
       returnedImage
     }
+  },
+  data() {
+    return {
+      src: "http://localhost:8000/gen?lastmod=12345678"
+    }
+  },
+  methods: {
+    callFunction: function () {
+      let i = 0;
+      var v = this;
+      setInterval(() => {
+        this.src = this.src[i];
+        if (++i === this.src.length) i = 0;
+        v.src = "http://localhost:8000/gen?lastmod=12345678"
+      }, 1000);
+    },
+    download() {
+      axios({
+        url: 'http://localhost:8000/gen?lastmod=12345678',
+        method: 'GET',
+        responseType: 'blob'
+      })
+        .then((response) => {
+          const url = window.URL
+            .createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'image.png');
+          document.body.appendChild(link);
+          link.click();
+        })
+    },
+
+
+  },
+
+  mounted() {
+    this.callFunction()
   }
+
 })
 </script>
-

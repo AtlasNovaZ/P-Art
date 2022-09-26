@@ -1,11 +1,11 @@
 
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, Response, FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from prompt_toolkit import prompt
 
 
-from fastapi import FastAPI, File, UploadFile, Response
+from fastapi import FastAPI, File, UploadFile, Response, WebSocket
 from pydantic import BaseModel
 
 from imgtag import ImgTag    # metadatos
@@ -65,11 +65,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@ app.post('/')
-def post_user_prompt(prompt_text: PostUserPrompt):
-    return prompt_text
 
 
 @ app.get('/')
@@ -276,7 +271,7 @@ async def generate(prompt_text: PostUserPrompt):
     objective_image = ""  # @param {type:"string"}
     imagenes_objetivo = objective_image
     seed = -1  # @param {type:"number"}
-    max_iterations = 100  # @param {type:"number"}
+    max_iterations = 50  # @param {type:"number"}
     max_iteraciones = max_iterations
     input_images = ""
 
@@ -511,6 +506,61 @@ async def generate(prompt_text: PostUserPrompt):
 
     # device = torch.device("cuda")
     # model.to(device)
+
     # return FileResponse('progress.png')
     return FileResponse('progress.png')
     # return prompt_text
+
+
+@app.get("/gen")
+async def read_random_file():
+
+    return FileResponse('progress.png')
+
+
+html = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h1>WebSocket Chat</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+            var ws = new WebSocket("ws://localhost:8000/ws");
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
+"""
+
+
+@app.get("/test")
+async def get():
+    return HTMLResponse(html)
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message text was: {data}")
