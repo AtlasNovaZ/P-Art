@@ -13,7 +13,9 @@ from IPython import display
 import numpy
 import requests
 import pandas
+from typing import Optional
 import os
+import pathlib
 import wget
 import json
 from stegano import lsb
@@ -73,9 +75,19 @@ async def root():
 
 
 @ app.post('/uploadimage')
-async def upload(file: UploadFile = File(...)):
-    FilePath = "./P-Art/py/image"
-    filename = file.filename
+def upload(imagefile: Optional[UploadFile] = File(...)):
+    file_location = f'./image/'
+    # pathlib.Path(file_location).mkdir(exists_ok=True, parents=True)
+
+    file_location += f'/image.png'
+
+    with open(file_location, 'wb') as file_obj:
+        file_obj.write(imagefile.file.read())
+
+    return{
+        'massage': 'SUCCESS',
+        'File_name': imagefile.filename,
+    }
 
 
 @ app.post('/gen')
@@ -267,12 +279,17 @@ async def generate(prompt_text: PostUserPrompt):
     modelo = model
     interval_image = 50  # @param {type:"number"}
     intervalo_imagenes = interval_image
-    initial_image = ""  # @param {type:"string"}
+    imageFile = pathlib.Path(
+        "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/image.png")
+    if imageFile.exists():
+        initial_image = "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/image.png"
+    else:
+        initial_image = ""  # @param {type:"string"}
     imagen_inicial = initial_image
     objective_image = ""  # @param {type:"string"}
     imagenes_objetivo = objective_image
     seed = -1  # @param {type:"number"}
-    max_iterations = 200  # @param {type:"number"}
+    max_iterations = 50  # @param {type:"number"}
     max_iteraciones = max_iterations
     input_images = ""
 
@@ -506,60 +523,27 @@ async def generate(prompt_text: PostUserPrompt):
             pass
 
     # device = torch.device("cuda")
-    # model.to(device)
 
     # return FileResponse('progress.png')
+    if os.path.isfile(imageFile):
+        os.remove(imageFile)
+        print("Image already exists")
+    else:
+        print("The file does not exist")
+    # pathlib.Path(
+    #     "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/image.png").unlink()
+
     return FileResponse('progress.png')
     # return prompt_text
 
 
-@app.get("/gen")
+@ app.get("/gen")
 async def read_gen_file():
 
     return FileResponse('progress.png')
 
 
-html = """
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Chat</title>
-    </head>
-    <body>
-        <h1>WebSocket Chat</h1>
-        <form action="" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off"/>
-            <button>Send</button>
-        </form>
-        <ul id='messages'>
-        </ul>
-        <script>
-            var ws = new WebSocket("ws://localhost:8000/ws");
-            ws.onmessage = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createTextNode(event.data)
-                message.appendChild(content)
-                messages.appendChild(message)
-            };
-            function sendMessage(event) {
-                var input = document.getElementById("messageText")
-                ws.send(input.value)
-                input.value = ''
-                event.preventDefault()
-            }
-        </script>
-    </body>
-</html>
-"""
-
-
-@app.get("/test")
-async def get():
-    return HTMLResponse(html)
-
-
-@app.websocket("/ws")
+@ app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:

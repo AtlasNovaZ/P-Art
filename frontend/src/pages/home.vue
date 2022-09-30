@@ -99,7 +99,7 @@
           </div>
 
           <div>
-            <button @click="sendRequest()"
+            <button @click.prevent="sendRequest()"
               class="group relative w-full flex justify-center py-2 mt-6 px-4 border border-transparent text-sm font-medium rounded-3xl text-white bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
               <span
                 class="absolute left-0 inset-y-0 flex items-center pl-3 h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
@@ -192,6 +192,7 @@ export default defineComponent({
       //   input.value = ''
       //   event.preventDefault()
       // }
+
       // if (selectedFile.value == null) {
       //   return
       // }
@@ -209,6 +210,7 @@ export default defineComponent({
             style: products[selectedStyle.value - 1].imagestyle
           }
         });
+
         if (response.status == 200) {
           document.getElementById('loader-bar').style.display = 'none';
           document.getElementById("imagen").style.display = 'block';
