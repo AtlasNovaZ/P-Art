@@ -3,12 +3,6 @@ import { defineComponent } from "vue";
 import Home from './pages/home.vue'
 import axios from 'axios'
 
-export default {
-  setup() {
-    axios.get('https://api.kanye.rest/')
-  },
-  name: "App",
-};
 </script>
 
 <template>

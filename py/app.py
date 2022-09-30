@@ -6,7 +6,7 @@ from prompt_toolkit import prompt
 
 
 from fastapi import FastAPI, File, UploadFile, Response, WebSocket
-from pydantic import BaseModel
+from pydantic import BaseModel, FilePath
 
 from imgtag import ImgTag    # metadatos
 from IPython import display
@@ -72,9 +72,10 @@ async def root():
     return {'hello': 'worldatz'}
 
 
-@ app.post('/genimage')
-def upload(file: UploadFile = File(...)):
-    return file.filename
+@ app.post('/uploadimage')
+async def upload(file: UploadFile = File(...)):
+    FilePath = "./P-Art/py/image"
+    filename = file.filename
 
 
 @ app.post('/gen')
@@ -253,11 +254,11 @@ async def generate(prompt_text: PostUserPrompt):
             return
 
     # @title 4) Art Generator Parameters
-    print(torch.cuda.is_available())
+    # print(torch.cuda.is_available())
     # text = prompt_text  # @param {type:"string"}
     textos = prompt_text.prompt + ' ' + prompt_text.style
-    height = 320  # @param {type:"number"}
-    width = 320  # @param {type:"number"}
+    height = 330  # @param {type:"number"}
+    width = 330  # @param {type:"number"}
     ancho = width
     alto = height
     # @param ["vqgan_imagenet_f16_16384", "vqgan_imagenet_f16_1024"]
@@ -271,7 +272,7 @@ async def generate(prompt_text: PostUserPrompt):
     objective_image = ""  # @param {type:"string"}
     imagenes_objetivo = objective_image
     seed = -1  # @param {type:"number"}
-    max_iterations = 50  # @param {type:"number"}
+    max_iterations = 200  # @param {type:"number"}
     max_iteraciones = max_iterations
     input_images = ""
 
@@ -336,7 +337,7 @@ async def generate(prompt_text: PostUserPrompt):
 
         # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print('Using device:', device)
-        print('use  gpu', torch.cuda.get_device_name(device))
+        print('use gpu', torch.cuda.get_device_name(device))
         print('torch', torch.device(1))
 
         if textos:
@@ -513,7 +514,7 @@ async def generate(prompt_text: PostUserPrompt):
 
 
 @app.get("/gen")
-async def read_random_file():
+async def read_gen_file():
 
     return FileResponse('progress.png')
 

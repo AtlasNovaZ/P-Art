@@ -44,7 +44,7 @@
             <div>
               <h1 class="text-2xl text-white pb-2 font-bold ">Enter word</h1>
               <label for="email-address" class="sr-only">textprompt</label>
-              <input id="textprompt" name="text" type="text" autocomplete="text" required v-model="prompt"
+              <input id="textprompt" name="text" type="text" autocomplete="text" v-model="prompt" required
                 class="appearance-none rounded-3xl text-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900  focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 "
                 placeholder="Describe something here" />
             </div>
@@ -99,7 +99,7 @@
           </div>
 
           <div>
-            <button @click.prevent="sendRequest()"
+            <button @click="sendRequest()"
               class="group relative w-full flex justify-center py-2 mt-6 px-4 border border-transparent text-sm font-medium rounded-3xl text-white bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
               <span
                 class="absolute left-0 inset-y-0 flex items-center pl-3 h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
@@ -113,12 +113,18 @@
 
         <div class="basis-2/5 grid grid-cols grid-rows justify-center justify-items-center bg-slate-900/80 rounded-3xl">
           <h1 class="text-4xl text-white pt-5 font-bold ">Your artwork</h1>
+          <!-- <p class="text-xl">Artwork name: {{ prompt }}</p> -->
           <!-- <img src="" class=" bg-gray-100 rounded-lg animate-spin" /> -->
           <!-- <img src="http://localhost:8000/gen?lastmod=12345678" /> -->
           <div class="grid bg-base-300 place-items-center rounded-3xl " style="height: 370px; width: 370px;">
-            <loading />
-            <img src="response">
-            <!-- <img :src="src"> -->
+
+            <div id="loader-bar" name="loader-bar" style="display: none;">
+              <loading />
+              <h1 class="justify-content-center">loading</h1>
+            </div>
+            <!-- <img src="response"> -->
+            <img :src="src" id="imagen" style="display: block">
+
           </div>
 
 
@@ -151,6 +157,7 @@ import Loading from './loading.vue'
 
 export default defineComponent({
   setup() {
+
     const prompt: Ref<string> = ref("");
     const selectedStyle: Ref<number> = ref(1);
     // const styles: Ref<string> = ref(products[3].imagestyle)
@@ -173,8 +180,8 @@ export default defineComponent({
     //   selectedFile.value = target.files == null ? null : target.files[0]
     // }
     const sendRequest = async () => {
-
-
+      document.getElementById('loader-bar').style.display = 'block';
+      document.getElementById('imagen').style.display = 'none';
 
       // var ws = new WebSocket("ws://localhost:8000/ws");
       // ws.onmessage = function (event) {
@@ -194,31 +201,37 @@ export default defineComponent({
       // // form.append('base_image', selectedFile.value, selectedFile.value.toString())
       // form.append('prompt_text', prompt.value)
       // form.append('style', products.values.toString())
-      const response = await ky.post("http://127.0.0.1:8000/gen", {
-        onDownloadProgress: (progress, chunk) => {
-          // Example output:
-          // `0% - 0 of 1271 bytes`
-          // `100% - 1271 of 1271 bytes`
-          console.log(`${progress.percent * 100}% - ${progress.transferredBytes} of ${progress.totalBytes} bytes`);
-        },
-        timeout: false,
-        json: {
-          prompt: prompt.value,
-          style: products[selectedStyle.value - 1].imagestyle
-        }
-      }).json();
-      // const responseimage = await ky.get('http://localhost:8000/gen', {
-      //   body: image
-      // }).json()
-      console.log(response);
+      if (prompt.value != "") {
+        const response = await ky.post("http://127.0.0.1:8000/gen", {
+          timeout: false,
+          json: {
+            prompt: prompt.value,
+            style: products[selectedStyle.value - 1].imagestyle
+          }
+        });
+        if (response.status == 200) {
+          document.getElementById('loader-bar').style.display = 'none';
+          document.getElementById("imagen").style.display = 'block';
+          const imagedresponse = ky.get("http://localhost:8000/gen?lastmod=12345678", {
+          });
+          return imagedresponse
+        };
+        return response
+      };
+      // const imageget = await ky.get('http://localhost:8000/gen', {
+      // });
+      // console.log(response);
       // console.log(responseimage)
-      const imagedresponse = await ky.get("http://localhost:8000/gen", {}).blob();
-      console.log(imagedresponse);
+      // const imagedresponse = await ky.get("http://localhost:8000/gen", {}).blob();
+      // console.log(imagedresponse);
       // returnedImage.value = imagedresponse
     };
 
-    const response = ky.get("http://localhost:8000/gen", {}).blob();
-    console.log(response);
+
+
+    // const imagedresponse = ky.get("http://localhost:8000/gen?lastmod=", {
+    // }).blob();
+    // console.log(imagedresponse);
 
 
     return {
@@ -230,28 +243,27 @@ export default defineComponent({
       // selectedFile,
       //onFileSelected,
       returnedImage,
-      response
-    };
-  },
-  data() {
-    return {
+      // imagedresponse,
       src: "http://localhost:8000/gen?lastmod=12345678"
     };
   },
+  data() {
+
+  },
   methods: {
-    callFunction: function () {
-      let i = 0;
-      var v = this;
-      setInterval(() => {
-        this.src = this.src[i];
-        if (++i === this.src.length)
-          i = 0;
-        v.src = "http://localhost:8000/gen?lastmod=12345678";
-      }, 1000);
-    },
+    // callFunction: function () {
+    //   let i = 0;
+    //   var v = this;
+    //   setInterval(() => {
+    //     this.src = this.src[i];
+    //     if (++i === this.src.length)
+    //       i = 0;
+    //     v.src = "http://localhost:8000/gen?lastmod=";
+    //   }, 1000);
+    // },
     download() {
       axios({
-        url: "http://localhost:8000/gen?lastmod=12345678",
+        url: "src",
         method: "GET",
         responseType: "blob"
       })
@@ -260,14 +272,12 @@ export default defineComponent({
             .createObjectURL(new Blob([response.data]));
           const link = document.createElement("a");
           link.href = url;
-          link.setAttribute("download", "image.png");
+          link.setAttribute("download", "Artwork.png");
           document.body.appendChild(link);
           link.click();
         });
     },
-  },
-  mounted() {
-    this.callFunction();
+
   },
   components: { Loading }
 })
