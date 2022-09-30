@@ -1,9 +1,16 @@
 
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, Response, FileResponse
+from fastapi.responses import Response, FileResponse
 from prompt_toolkit import prompt
 
+
+import pickledb
+import nanoid
+import pathlib
+import time
+import requests
+from typing import Optional
 
 from fastapi import FastAPI, File, UploadFile, Response
 from pydantic import BaseModel
@@ -12,8 +19,6 @@ from imgtag import ImgTag    # metadatos
 from IPython import display
 import numpy
 import requests
-import pandas
-import os
 import wget
 import json
 from stegano import lsb
@@ -75,6 +80,34 @@ def post_user_prompt(prompt_text: PostUserPrompt):
 @ app.get('/')
 async def root():
     return {'hello': 'worldatz'}
+
+
+@app.post('/generate-image/upload-image/{generated_image_id}')
+def receive_image_form(generated_image_id: str, image: Optional[UploadFile] = File(None)):
+    if image is None:
+        return {
+            'message': 'SUCCESS',
+            'filename': '',
+            'image_id': ''
+        }
+
+    file_location = f'./user_defined_images/{generated_image_id}'
+
+    # * create a directory for the file, using the generate id as the directory name
+    pathlib.Path(file_location).mkdir(exist_ok=True, parents=True)
+
+    # suffix returns the file extension with the dot
+    file_location += f'/image.png'
+
+    # * saving the file to the given directory
+    with open(file_location, 'wb+') as file_object:
+        file_object.write(image.file.read())
+
+    return {
+        'message': 'SUCCESS',
+        'filename': image.filename,
+        'image_id': generated_image_id
+    }
 
 
 @ app.post('/genimage')
@@ -261,8 +294,8 @@ async def generate(prompt_text: PostUserPrompt):
     print(torch.cuda.is_available())
     # text = prompt_text  # @param {type:"string"}
     textos = prompt_text.prompt + ' ' + prompt_text.style
-    height = 320  # @param {type:"number"}
-    width = 320  # @param {type:"number"}
+    height = 300  # @param {type:"number"}
+    width = 300  # @param {type:"number"}
     ancho = width
     alto = height
     # @param ["vqgan_imagenet_f16_16384", "vqgan_imagenet_f16_1024"]
@@ -271,12 +304,18 @@ async def generate(prompt_text: PostUserPrompt):
     modelo = model
     interval_image = 50  # @param {type:"number"}
     intervalo_imagenes = interval_image
-    initial_image = ""  # @param {type:"string"}
+    # @param {type:"string"}
+    file = pathlib.Path(
+        "/home/atlasnovaz/Documents/GitHub/P-Art/py/user_defined_images/123456/image.png")
+    if file.exists():
+        initial_image = "/home/atlasnovaz/Documents/GitHub/P-Art/py/user_defined_images/123456/image.png"
+    else:
+        initial_image = ""
     imagen_inicial = initial_image
     objective_image = ""  # @param {type:"string"}
     imagenes_objetivo = objective_image
     seed = -1  # @param {type:"number"}
-    max_iterations = 100  # @param {type:"number"}
+    max_iterations = 50  # @param {type:"number"}
     max_iteraciones = max_iterations
     input_images = ""
 
