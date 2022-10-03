@@ -89,10 +89,10 @@
                     </p>
                     <p class="text-xs text-white">PNG, JPEG, JPG</p>
                   </div>
-                  <!-- <input id="dropzone-file" type="file" class="hidden" accept="image/png, image/jpg, image/jpeg"
-                    @change="onFileSelected($event)" /> -->
+                  <input id="dropzone-file" type="file" class="hidden" accept="image/png, image/jpg, image/jpeg"
+                    @change="onFileSelected($event)" />
                 </label>
-                <!-- <input id="dropzone-file" type="file" @change="onFileSelected($event)" /> -->
+                <input id="dropzone-file" type="file" @change="onFileSelected($event)" />
               </div>
             </div>
 
@@ -125,6 +125,7 @@
             <!-- <img src="response"> -->
             <img :src="src" id="imagen" style="display: block">
 
+
           </div>
 
 
@@ -156,6 +157,31 @@ import Loading from './loading.vue'
 
 
 export default defineComponent({
+  data() {
+    return {
+      selectfile: null,
+    }
+  },
+  methods: {
+
+    download() {
+      axios({
+        url: this.src,
+        method: "GET",
+        responseType: "blob"
+      })
+        .then((response) => {
+          const url = window.URL
+            .createObjectURL(new Blob([response.data]));
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", "Artwork.png");
+          document.body.appendChild(link);
+          link.click();
+        });
+    },
+
+  },
   setup() {
 
     const prompt: Ref<string> = ref("");
@@ -173,12 +199,12 @@ export default defineComponent({
       }
       console.log(selectedStyle.value);
     };
-    // const onFileSelected = (ev: Event) => {
-    //   console.log(ev)
-    //   console.log('upload pass')
-    //   const target = ev.target as HTMLInputElement
-    //   selectedFile.value = target.files == null ? null : target.files[0]
-    // }
+    const onFileSelected = (ev: Event) => {
+      console.log(ev)
+      console.log('upload pass')
+      const target = ev.target as HTMLInputElement
+      selectedFile.value = target.files == null ? null : target.files[0]
+    }
     const sendRequest = async () => {
       document.getElementById('loader-bar').style.display = 'block';
       document.getElementById('imagen').style.display = 'none';
@@ -192,10 +218,22 @@ export default defineComponent({
       //   input.value = ''
       //   event.preventDefault()
       // }
+      const form = new FormData()
+      form.append('base_image', selectedFile.value, selectedFile.value.toString())
+      return ky.post("http://localhost:8000/uploadimage", {
 
-      // if (selectedFile.value == null) {
-      //   return
-      // }
+      })
+
+      if (selectedFile.value == null) {
+        return
+      }
+      const imagefile = await ky.post("http://127.0.0.1:8000/uploadimage", {
+        timeout: false,
+        json: {
+          prompt: prompt.value,
+          style: products[selectedStyle.value - 1].imagestyle
+        }
+      });
       // const image = new FormData()
       // image.append('base_image', selectedFile.value, selectedFile.value.toString())
       // const form = new FormData()
@@ -214,8 +252,8 @@ export default defineComponent({
         if (response.status == 200) {
           document.getElementById('loader-bar').style.display = 'none';
           document.getElementById("imagen").style.display = 'block';
-          const imagedresponse = ky.get("http://localhost:8000/gen?lastmod=12345678", {
-          });
+          const imagedresponse = ky.get("http://localhost:8000/gen?lastmod=", {
+          }).blob();
           return imagedresponse
         };
         return response
@@ -243,43 +281,11 @@ export default defineComponent({
       onStyleClicked,
       selectedStyle,
       // selectedFile,
-      //onFileSelected,
+      onFileSelected,
       returnedImage,
       // imagedresponse,
-      src: "http://localhost:8000/gen?lastmod=12345678"
+      src: "http://localhost:8000/gen?lastmod="
     };
-  },
-  data() {
-
-  },
-  methods: {
-    // callFunction: function () {
-    //   let i = 0;
-    //   var v = this;
-    //   setInterval(() => {
-    //     this.src = this.src[i];
-    //     if (++i === this.src.length)
-    //       i = 0;
-    //     v.src = "http://localhost:8000/gen?lastmod=";
-    //   }, 1000);
-    // },
-    download() {
-      axios({
-        url: "src",
-        method: "GET",
-        responseType: "blob"
-      })
-        .then((response) => {
-          const url = window.URL
-            .createObjectURL(new Blob([response.data]));
-          const link = document.createElement("a");
-          link.href = url;
-          link.setAttribute("download", "Artwork.png");
-          document.body.appendChild(link);
-          link.click();
-        });
-    },
-
   },
   components: { Loading }
 })
