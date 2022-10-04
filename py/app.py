@@ -75,18 +75,18 @@ async def root():
 
 
 @ app.post('/uploadimage')
-def upload(imagefile: Optional[UploadFile] = File(...)):
+def upload(image: UploadFile = File(None)):
     file_location = f'./image/'
     # pathlib.Path(file_location).mkdir(exists_ok=True, parents=True)
 
     file_location += f'/image.png'
 
     with open(file_location, 'wb') as file_obj:
-        file_obj.write(imagefile.file.read())
+        file_obj.write(image.file.read())
 
     return{
         'massage': 'SUCCESS',
-        'File_name': imagefile.filename,
+        'File_name': image.filename,
     }
 
 

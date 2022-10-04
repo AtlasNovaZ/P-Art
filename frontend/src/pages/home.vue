@@ -92,7 +92,7 @@
                   <input id="dropzone-file" type="file" class="hidden" accept="image/png, image/jpg, image/jpeg"
                     @change="onFileSelected($event)" />
                 </label>
-                <input id="dropzone-file" type="file" @change="onFileSelected($event)" />
+
               </div>
             </div>
 
@@ -151,6 +151,7 @@ import { ref, Ref, defineComponent } from 'vue'
 import ky from 'ky'
 import axios from 'axios'
 import Loading from './loading.vue'
+import { useRouter } from 'vue-router'
 
 
 
@@ -181,14 +182,14 @@ export default defineComponent({
         });
     },
 
+
   },
   setup() {
-
+    const router = useRouter()
     const prompt: Ref<string> = ref("");
     const selectedStyle: Ref<number> = ref(1);
-    // const styles: Ref<string> = ref(products[3].imagestyle)
     const selectedFile: Ref<File | null> = ref(null);
-    const returnedImage: Ref<Blob | null> = ref(null);
+
     const onStyleClicked = (styleId: number): void => {
       if (styleId & selectedStyle.value & 1) {
         selectedStyle.value == 1;
@@ -199,11 +200,20 @@ export default defineComponent({
       }
       console.log(selectedStyle.value);
     };
-    const onFileSelected = (ev: Event) => {
-      console.log(ev)
-      console.log('upload pass')
+    const onFileSelected = (ev: Event): void => {
       const target = ev.target as HTMLInputElement
-      selectedFile.value = target.files == null ? null : target.files[0]
+
+      if (target.files == null) {
+        return
+      }
+
+      if (target.files.length > 0) {
+        if (target.files[0] == null) {
+          return
+        }
+        selectedFile.value = target.files[0]
+      }
+      console.log('uploading')
     }
     const sendRequest = async () => {
       document.getElementById('loader-bar').style.display = 'block';
@@ -218,46 +228,63 @@ export default defineComponent({
       //   input.value = ''
       //   event.preventDefault()
       // }
-      const form = new FormData()
-      form.append('base_image', selectedFile.value, selectedFile.value.toString())
-      return ky.post("http://localhost:8000/uploadimage", {
 
-      })
+      try {
+        const form = new FormData()
 
-      if (selectedFile.value == null) {
-        return
-      }
-      const imagefile = await ky.post("http://127.0.0.1:8000/uploadimage", {
-        timeout: false,
-        json: {
-          prompt: prompt.value,
-          style: products[selectedStyle.value - 1].imagestyle
+        if (selectedFile.value != null) {
+          form.append('image', selectedFile.value, selectedFile.value.toString())
+          await ky.post(`http://localhost:8000/uploadimage`, {
+            body: form,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+
+          })
+        } else {
+          await ky.post(`http://localhost:8000/uploadimage`)
         }
-      });
+      } catch (e) {
+        console.error(e)
+      }
+
+
       // const image = new FormData()
       // image.append('base_image', selectedFile.value, selectedFile.value.toString())
       // const form = new FormData()
       // // form.append('base_image', selectedFile.value, selectedFile.value.toString())
       // form.append('prompt_text', prompt.value)
       // form.append('style', products.values.toString())
-      if (prompt.value != "") {
-        const response = await ky.post("http://127.0.0.1:8000/gen", {
-          timeout: false,
-          json: {
-            prompt: prompt.value,
-            style: products[selectedStyle.value - 1].imagestyle
-          }
-        });
+      try {
+        if (prompt.value != "") {
+          const response = await ky.post("http://127.0.0.1:8000/gen", {
+            timeout: false,
+            json: {
+              prompt: prompt.value,
+              style: products[selectedStyle.value - 1].imagestyle
+            },
+            headers: {
+              'content-type': 'application/json'
+            }
+          });
 
-        if (response.status == 200) {
-          document.getElementById('loader-bar').style.display = 'none';
-          document.getElementById("imagen").style.display = 'block';
-          const imagedresponse = ky.get("http://localhost:8000/gen?lastmod=", {
-          }).blob();
-          return imagedresponse
+          if (response.status == 200) {
+            document.getElementById('loader-bar').style.display = 'none';
+            document.getElementById("imagen").style.display = 'block';
+            const imagedresponse = ky.get("http://localhost:8000/gen?lastmod=", {
+            }).blob();
+            return imagedresponse
+          };
+          return response
         };
-        return response
-      };
+      } catch (e) {
+        console.error(e)
+      }
+
+      router.push({
+        name: "display gen image",
+
+      })
       // const imageget = await ky.get('http://localhost:8000/gen', {
       // });
       // console.log(response);
@@ -282,9 +309,8 @@ export default defineComponent({
       selectedStyle,
       // selectedFile,
       onFileSelected,
-      returnedImage,
       // imagedresponse,
-      src: "http://localhost:8000/gen?lastmod="
+      src: "http://127.0.0.1:8000/gen?lastmod="
     };
   },
   components: { Loading }
