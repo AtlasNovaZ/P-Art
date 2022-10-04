@@ -190,6 +190,8 @@ export default defineComponent({
     const selectedStyle: Ref<number> = ref(1);
     const selectedFile: Ref<File | null> = ref(null);
 
+    const IDsession = ref('')
+
     const onStyleClicked = (styleId: number): void => {
       if (styleId & selectedStyle.value & 1) {
         selectedStyle.value == 1;
@@ -229,24 +231,25 @@ export default defineComponent({
       //   event.preventDefault()
       // }
 
-      try {
-        const form = new FormData()
+      // try {
+      //   const form = new FormData()
 
-        if (selectedFile.value != null) {
-          form.append('image', selectedFile.value, selectedFile.value.toString())
-          await ky.post(`http://localhost:8000/uploadimage`, {
-            body: form,
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
+      //   if (selectedFile.value != null) {
+      //     form.append('image', selectedFile.value, selectedFile.value.toString())
+      //     await ky.post(`http://localhost:8000/gen/uploadimage`, {
+      //       body: form,
+      //       headers: {
+      //         "Content-Type": "multipart/form-data",
+      //       },
 
-          })
-        } else {
-          await ky.post(`http://localhost:8000/uploadimage`)
-        }
-      } catch (e) {
-        console.error(e)
-      }
+      //     })
+
+      //   } else {
+      //     await ky.post(`http://localhost:8000/uploadimage`)
+      //   }
+      // } catch (e) {
+      //   console.error(e)
+      // }
 
 
       // const image = new FormData()
@@ -257,7 +260,21 @@ export default defineComponent({
       // form.append('style', products.values.toString())
       try {
         if (prompt.value != "") {
-          const response = await ky.post("http://127.0.0.1:8000/gen", {
+          // const idresponse = await ky.post(`http://localhost:8000/gen`, {
+          //   timeout: false,
+          //   json: {
+          //     prompt: prompt.value,
+          //     style: products[selectedStyle.value - 1].imagestyle
+          //   },
+          //   headers: {
+          //     'content-type': 'application/json'
+          //   }
+
+          // }).json<{ generated_image_id: string }>()
+          // IDsession.value = idresponse.generated_image_id
+
+
+          const response = await ky.post(`http://127.0.0.1:8000/gen/generate`, {
             timeout: false,
             json: {
               prompt: prompt.value,
@@ -266,8 +283,8 @@ export default defineComponent({
             headers: {
               'content-type': 'application/json'
             }
-          });
 
+          })
           if (response.status == 200) {
             document.getElementById('loader-bar').style.display = 'none';
             document.getElementById("imagen").style.display = 'block';
@@ -285,6 +302,28 @@ export default defineComponent({
         name: "display gen image",
 
       })
+
+      try {
+        const form = new FormData()
+
+        if (selectedFile.value != null) {
+          form.append('image', selectedFile.value, selectedFile.value.toString())
+          await ky.post(`http://localhost:8000/gen/uploadimage/${IDsession.value}`, {
+            body: form,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+
+          })
+
+        } else {
+          await ky.post(`http://localhost:8000/uploadimage/${IDsession.value}`)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+
+
       // const imageget = await ky.get('http://localhost:8000/gen', {
       // });
       // console.log(response);
@@ -310,7 +349,7 @@ export default defineComponent({
       // selectedFile,
       onFileSelected,
       // imagedresponse,
-      src: "http://127.0.0.1:8000/gen?lastmod="
+      src: "http://127.0.0.1:8000/gen/generate?lastmod="
     };
   },
   components: { Loading }

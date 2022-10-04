@@ -1,18 +1,18 @@
-
-
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from prompt_toolkit import prompt
 
 
 from fastapi import FastAPI, File, UploadFile, Response, WebSocket
-from pydantic import BaseModel, FilePath
-
+from pydantic import BaseModel
 from imgtag import ImgTag    # metadatos
 from IPython import display
 import numpy
 import requests
 import pandas
+import pickledb
+import time
+import nanoid
 from typing import Optional
 import os
 import pathlib
@@ -45,19 +45,17 @@ from pathlib import Path
 import math
 import argparse
 
-app = FastAPI()
-
 
 class PostUserPrompt(BaseModel):
     prompt: str
     style: str
 
 
+db = pickledb.load('./py/generate_list.db', False)
+app = FastAPI()
+
 origins = [
-    "http://localhost",
-    "http://localhost:8080",
-    "http://localhost:8000",
-    "localhost:8000",
+    '*'
 ]
 
 app.add_middleware(
@@ -74,14 +72,37 @@ async def root():
     return {'hello': 'worldatz'}
 
 
-@ app.post('/uploadimage')
-def upload(image: UploadFile = File(None)):
-    file_location = f'./image/'
-    # pathlib.Path(file_location).mkdir(exists_ok=True, parents=True)
+@ app.post('/gen')
+def generate_id(body: PostUserPrompt):
+    generated_image_id = nanoid.generate()
 
-    file_location += f'/image.png'
+    db.set(generated_image_id, {
+        'prompt_text': body.prompt,
+        'style': body.style
+    })
 
-    with open(file_location, 'wb') as file_obj:
+    db.dump()
+
+    return {
+        'massage': 'SUCCESS',
+        'id': generated_image_id
+    }
+
+
+@ app.post('/gen/uploadimage/{generated_image_id}')
+def upload(generated_image_id: str, image: Optional[UploadFile] = File(None)):
+    # if image is None:
+    #     return{
+    #         'massage': 'SUCCESS but no image was uploaded',
+
+    #     }
+    file_location = f'./image/{generated_image_id}'
+
+    pathlib.Path(file_location).mkdir(exist_ok=True, parents=True)
+
+    file_location += f'/{generated_image_id}{pathlib.Path(image.filename).suffix}'
+
+    with open(file_location, 'wb+') as file_obj:
         file_obj.write(image.file.read())
 
     return{
@@ -90,10 +111,9 @@ def upload(image: UploadFile = File(None)):
     }
 
 
-@ app.post('/gen')
+@ app.post('/gen/generate')
 async def generate(prompt_text: PostUserPrompt):
     sys.path.append('./taming-transformers')
-
     torch.cuda.memory_allocated('cuda')
     torch.cuda.empty_cache()
 
@@ -280,9 +300,9 @@ async def generate(prompt_text: PostUserPrompt):
     interval_image = 50  # @param {type:"number"}
     intervalo_imagenes = interval_image
     imageFile = pathlib.Path(
-        "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/image.png")
+        "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/{generated_image_id}/image.png")
     if imageFile.exists():
-        initial_image = "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/image.png"
+        initial_image = "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/{generated_image_id}/image.png"
     else:
         initial_image = ""  # @param {type:"string"}
     imagen_inicial = initial_image
@@ -537,7 +557,7 @@ async def generate(prompt_text: PostUserPrompt):
     # return prompt_text
 
 
-@ app.get("/gen")
+@ app.get("/gen/generate")
 async def read_gen_file():
 
     return FileResponse('progress.png')
