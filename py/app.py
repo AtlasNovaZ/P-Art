@@ -73,19 +73,19 @@ async def root():
 
 
 @ app.post('/gen')
-def generate_id(body: PostUserPrompt):
+def generate_id():
     generated_image_id = nanoid.generate()
 
-    db.set(generated_image_id, {
-        'prompt_text': body.prompt,
-        'style': body.style
-    })
+    # db.set(generated_image_id, {
+    #     'prompt_text': body.prompt,
+    #     'style': body.style
+    # })
 
-    db.dump()
+    # db.dump()
 
     return {
         'massage': 'SUCCESS',
-        'id': generated_image_id
+        'generated_image_id': generated_image_id
     }
 
 
@@ -96,15 +96,15 @@ def upload(generated_image_id: str, image: Optional[UploadFile] = File(None)):
     #         'massage': 'SUCCESS but no image was uploaded',
 
     #     }
-    file_location = f'./image/{generated_image_id}'
+    file_location = f'./image'
 
-    pathlib.Path(file_location).mkdir(exist_ok=True, parents=True)
+    # pathlib.Path(file_location).mkdir(exist_ok=True, parents=True)
 
-    file_location += f'/{generated_image_id}{pathlib.Path(image.filename).suffix}'
+    file_location += f'/{generated_image_id}.png'
 
     with open(file_location, 'wb+') as file_obj:
         file_obj.write(image.file.read())
-
+    print('UploadFile  was successfully')
     return{
         'massage': 'SUCCESS',
         'File_name': image.filename,
@@ -300,9 +300,9 @@ async def generate(prompt_text: PostUserPrompt):
     interval_image = 50  # @param {type:"number"}
     intervalo_imagenes = interval_image
     imageFile = pathlib.Path(
-        "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/{generated_image_id}/image.png")
+        "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/image.png")
     if imageFile.exists():
-        initial_image = "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/{generated_image_id}/image.png"
+        initial_image = "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/image.png"
     else:
         initial_image = ""  # @param {type:"string"}
     imagen_inicial = initial_image

@@ -164,7 +164,6 @@ export default defineComponent({
     }
   },
   methods: {
-
     download() {
       axios({
         url: this.src,
@@ -251,28 +250,33 @@ export default defineComponent({
       //   console.error(e)
       // }
 
+      const idresponse = await ky.post(`http://127.0.0.1:8000/gen`
+      ).json<{ massage: string, generated_image_id: string }>()
 
-      // const image = new FormData()
-      // image.append('base_image', selectedFile.value, selectedFile.value.toString())
-      // const form = new FormData()
-      // // form.append('base_image', selectedFile.value, selectedFile.value.toString())
-      // form.append('prompt_text', prompt.value)
-      // form.append('style', products.values.toString())
+      IDsession.value = idresponse.generated_image_id
+
+      try {
+        const form = new FormData()
+
+        if (selectedFile.value != null) {
+          form.append('image', selectedFile.value)
+          await ky.post(`http://127.0.0.1:8000/gen/uploadimage/${IDsession.value}`, {
+            body: form,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+          console.log('success')
+        } else {
+          await ky.post(`http://127.0.0.1:8000/gen/uploadimage${IDsession.value}`,)
+        }
+
+      } catch (e) {
+        console.error(e)
+      }
+
       try {
         if (prompt.value != "") {
-          // const idresponse = await ky.post(`http://localhost:8000/gen`, {
-          //   timeout: false,
-          //   json: {
-          //     prompt: prompt.value,
-          //     style: products[selectedStyle.value - 1].imagestyle
-          //   },
-          //   headers: {
-          //     'content-type': 'application/json'
-          //   }
-
-          // }).json<{ generated_image_id: string }>()
-          // IDsession.value = idresponse.generated_image_id
-
 
           const response = await ky.post(`http://127.0.0.1:8000/gen/generate`, {
             timeout: false,
@@ -288,41 +292,26 @@ export default defineComponent({
           if (response.status == 200) {
             document.getElementById('loader-bar').style.display = 'none';
             document.getElementById("imagen").style.display = 'block';
-            const imagedresponse = ky.get("http://localhost:8000/gen?lastmod=", {
+            const imagedresponse = ky.get("http://localhost:8000/gen/generate?lastmod=", {
             }).blob();
-            return imagedresponse
-          };
+            return {
+              src: imagedresponse
+            }
+          }
           return response
         };
       } catch (e) {
         console.error(e)
       }
 
+
+
       router.push({
         name: "display gen image",
-
-      })
-
-      try {
-        const form = new FormData()
-
-        if (selectedFile.value != null) {
-          form.append('image', selectedFile.value, selectedFile.value.toString())
-          await ky.post(`http://localhost:8000/gen/uploadimage/${IDsession.value}`, {
-            body: form,
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-
-          })
-
-        } else {
-          await ky.post(`http://localhost:8000/uploadimage/${IDsession.value}`)
+        params: {
+          generatedImageId: IDsession.value
         }
-      } catch (e) {
-        console.error(e)
-      }
-
+      })
 
       // const imageget = await ky.get('http://localhost:8000/gen', {
       // });
@@ -344,12 +333,11 @@ export default defineComponent({
       products,
       prompt,
       sendRequest,
-      onStyleClicked,
       selectedStyle,
-      // selectedFile,
+      onStyleClicked,
       onFileSelected,
       // imagedresponse,
-      src: "http://127.0.0.1:8000/gen/generate?lastmod="
+      src: `http://127.0.0.1:8000/gen/generate?lastmod=1122`
     };
   },
   components: { Loading }
