@@ -30,9 +30,9 @@
       <div>
 
         <h2
-          class=" text-5xl text-center font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-fuchsia-500">
+          class=" text-5xl text-center font-bold text-transparent mb-3 pb-3 bg-clip-text bg-gradient-to-r from-blue-500 to-fuchsia-500">
           P-Art Text to Image Generator</h2>
-        <h2 class="mt-6 text-center text-2xl text-white">test text2image</h2>
+        <h2 class="mt-6 text-center text-2xl text-white">text2image Generator create artwork in lessminute</h2>
         <p class="mt-2 text-center text-sm text-gray-600">
         </p>
       </div>
@@ -120,7 +120,7 @@
 
             <div id="loader-bar" name="loader-bar" style="display: none;">
               <loading />
-              <h1 class="justify-content-center">loading</h1>
+              <h1 class="justify-content-center text-xl">loading...</h1>
             </div>
             <!-- <img src="response"> -->
             <img :src="src" id="imagen" style="display: block">
@@ -152,15 +152,14 @@ import ky from 'ky'
 import axios from 'axios'
 import Loading from './loading.vue'
 import { useRouter } from 'vue-router'
+import { customAlphabet } from 'nanoid'
 
-
-
-
-
+const nanoid = customAlphabet('123456789', 6)
 export default defineComponent({
   data() {
     return {
       selectfile: null,
+      src: `http://127.0.0.1:8000/gen/generate?lastmod=${nanoid()}`
     }
   },
   methods: {
@@ -190,6 +189,7 @@ export default defineComponent({
     const selectedFile: Ref<File | null> = ref(null);
 
     const IDsession = ref('')
+
 
     const onStyleClicked = (styleId: number): void => {
       if (styleId & selectedStyle.value & 1) {
@@ -256,19 +256,19 @@ export default defineComponent({
       IDsession.value = idresponse.generated_image_id
 
       try {
-        const form = new FormData()
+        const FILEform = new FormData()
 
         if (selectedFile.value != null) {
-          form.append('image', selectedFile.value)
+          FILEform.append('image', selectedFile.value)
           await ky.post(`http://127.0.0.1:8000/gen/uploadimage/${IDsession.value}`, {
-            body: form,
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
+            body: FILEform,
+            // headers: {
+            //   "Content-Type": "multipart/form-data",
+            // },
           })
           console.log('success')
         } else {
-          await ky.post(`http://127.0.0.1:8000/gen/uploadimage${IDsession.value}`,)
+          // await ky.post(`http://127.0.0.1:8000/gen/uploadimage/${IDsession.value}`,)
         }
 
       } catch (e) {
@@ -278,7 +278,7 @@ export default defineComponent({
       try {
         if (prompt.value != "") {
 
-          const response = await ky.post(`http://127.0.0.1:8000/gen/generate`, {
+          const response = await ky.post(`http://127.0.0.1:8000/gen/generate/${IDsession.value}`, {
             timeout: false,
             json: {
               prompt: prompt.value,
@@ -289,20 +289,29 @@ export default defineComponent({
             }
 
           })
+
           if (response.status == 200) {
             document.getElementById('loader-bar').style.display = 'none';
             document.getElementById("imagen").style.display = 'block';
-            const imagedresponse = ky.get("http://localhost:8000/gen/generate?lastmod=", {
-            }).blob();
+            setInterval(function () {
+              location.reload();
+            }, 1000)
             return {
-              src: imagedresponse
+              src: `http://127.0.0.1:8000/gen/generate?lastmod=${nanoid()}`
+
             }
+            // const imagedresponse = ky.get(`http://localhost:8000/gen/generate?lastmod=${nanoid()}`, {
+            // }).blob();
+            // return {
+            //   src: imagedresponse
+            // }
           }
           return response
         };
       } catch (e) {
         console.error(e)
       }
+
 
 
 
@@ -337,7 +346,7 @@ export default defineComponent({
       onStyleClicked,
       onFileSelected,
       // imagedresponse,
-      src: `http://127.0.0.1:8000/gen/generate?lastmod=1122`
+      // src: `http://127.0.0.1:8000/gen/generate?lastmod=${nanoid()}`
     };
   },
   components: { Loading }

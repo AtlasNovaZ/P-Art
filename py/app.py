@@ -74,7 +74,8 @@ async def root():
 
 @ app.post('/gen')
 def generate_id():
-    generated_image_id = nanoid.generate()
+
+    generated_image_id = nanoid.generate(alphabet='1234567890abcdef', size=10)
 
     # db.set(generated_image_id, {
     #     'prompt_text': body.prompt,
@@ -100,7 +101,7 @@ def upload(generated_image_id: str, image: Optional[UploadFile] = File(None)):
 
     # pathlib.Path(file_location).mkdir(exist_ok=True, parents=True)
 
-    file_location += f'/{generated_image_id}.png'
+    file_location += f'/image.png'
 
     with open(file_location, 'wb+') as file_obj:
         file_obj.write(image.file.read())
@@ -108,11 +109,12 @@ def upload(generated_image_id: str, image: Optional[UploadFile] = File(None)):
     return{
         'massage': 'SUCCESS',
         'File_name': image.filename,
+        'generated_image_id': generated_image_id
     }
 
 
-@ app.post('/gen/generate')
-async def generate(prompt_text: PostUserPrompt):
+@ app.post('/gen/generate/{generated_image_id}')
+def generate(prompt_text: PostUserPrompt):
     sys.path.append('./taming-transformers')
     torch.cuda.memory_allocated('cuda')
     torch.cuda.empty_cache()
@@ -289,8 +291,8 @@ async def generate(prompt_text: PostUserPrompt):
     # print(torch.cuda.is_available())
     # text = prompt_text  # @param {type:"string"}
     textos = prompt_text.prompt + ' ' + prompt_text.style
-    height = 330  # @param {type:"number"}
-    width = 330  # @param {type:"number"}
+    height = 310  # @param {type:"number"}
+    width = 310  # @param {type:"number"}
     ancho = width
     alto = height
     # @param ["vqgan_imagenet_f16_16384", "vqgan_imagenet_f16_1024"]
@@ -309,7 +311,7 @@ async def generate(prompt_text: PostUserPrompt):
     objective_image = ""  # @param {type:"string"}
     imagenes_objetivo = objective_image
     seed = -1  # @param {type:"number"}
-    max_iterations = 50  # @param {type:"number"}
+    max_iterations = 100  # @param {type:"number"}
     max_iteraciones = max_iterations
     input_images = ""
 
