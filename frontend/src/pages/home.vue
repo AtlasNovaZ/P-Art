@@ -8,7 +8,7 @@
       </a>
       <div class="hidden w-full md:block md:w-auto" id="mobile-menu">
         <ul class="flex flex-col mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
-          <li>
+          <!-- <li>
             <router-link :to="{ path: '/' }"
               class="block py-2 pr-4 pl-3 text-white text-xl md:bg-transparent dark:text-white">
               Home
@@ -17,22 +17,20 @@
           <li>
             <router-link :to="{ path: '/about' }"
               class="block py-2 pr-4 pl-3 text-white text-xl md:bg-transparent dark:text-white">
-              About
+              About Me
             </router-link>
-          </li>
+          </li> -->
         </ul>
       </div>
     </div>
   </nav>
-  <div
-    class="min-h-screen flex items-start pt-10 bg-gradient-to-b from-gray-900 via-fuchsia-800 to-blue-900 justify-center ">
-    <div class="max-w-full bg-slate-900/60 space-y-8 gap-5 rounded-3xl w-4/5 p-10">
+  <div class="min-h-screen flex items-start pt-10 justify-center bg-cover bg-[url('https://i.imgur.com/W30ZlbX.png')]">
+    <div class="max-w-full bg-slate-900/90 space-y-8 gap-5 rounded-3xl w-4/5 p-10">
       <div>
-
         <h2
           class=" text-5xl text-center font-bold text-transparent mb-3 pb-3 bg-clip-text bg-gradient-to-r from-blue-500 to-fuchsia-500">
           P-Art Text to Image Generator</h2>
-        <h2 class="mt-6 text-center text-2xl text-white">text2image Generator create artwork in lessminute</h2>
+        <h2 class="mt-6 text-center text-2xl text-white">Create art with the powerful Artificial Intelligence</h2>
         <p class="mt-2 text-center text-sm text-gray-600">
         </p>
       </div>
@@ -41,16 +39,19 @@
         <form class="basis-3/5">
 
           <div class="rounded-md shadow-sm ">
-            <div>
-              <h1 class="text-2xl text-white pb-2 font-bold ">Enter word</h1>
-              <label for="email-address" class="sr-only">textprompt</label>
-              <input id="textprompt" name="text" type="text" autocomplete="text" v-model="prompt" required
-                class="appearance-none rounded-3xl text-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900  focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 "
-                placeholder="Describe something here" />
+            <div class="flex items-center">
+              <div class="basis-4/5 text-3xl text-white pb-2 font-bold ">Enter word</div>
+              <div class="basis-1/5 text-right mr-3 text-xl input-group-addon" v-text="(min + prompt.length+ '/50')">
+              </div>
             </div>
+            <label for="email-address" class="sr-only">textprompt</label>
+            <input id="textprompt" name="text" type="text" autocomplete="text" v-model="prompt" required
+              class="appearance-none rounded-3xl text-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900  focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 "
+              placeholder="Describe something here" :maxlength="50" />
+
           </div>
           <div class="overflow-y-auto mt-12 h-80 justify-content-center ">
-            <h1 class="text-2xl text-white pb-2 font-bold ">Choose style</h1>
+            <h1 class="text-3xl text-white pb-2 font-bold ">Choose style</h1>
             <div class="grid grid-cols-5 gap-5 px-5">
               <div v-for="product in products">
                 <div :key="product.id" :class="selectedStyle != product.id ?
@@ -68,17 +69,15 @@
                           {{ product.name }}
                         </a>
                       </h3>
-                      <!-- <p class="mt-1 text-sm text-gray-500">{{ product.color }}</p> -->
                     </div>
-
                   </div>
                 </div>
               </div>
             </div>
             <div class="grid mt-5">
-              <div class="flex pb-2">
-                <h1 class="text-4xl text-white font-bold ">Insert Image</h1>
-                <h1 class="text-lg text-white ml-5 ">Optional</h1>
+              <div class="flex pb-2 items-center">
+                <h1 class="text-3xl text-white font-bold ">Insert Image</h1>
+                <h1 class="text-xl text-white ml-5 ">( Optional )</h1>
               </div>
               <div class="flex justify-center justify-items-center w-80 ">
                 <label for="dropzone-file"
@@ -92,12 +91,9 @@
                   <input id="dropzone-file" type="file" class="hidden" accept="image/png, image/jpg, image/jpeg"
                     @change="onFileSelected($event)" />
                 </label>
-
               </div>
             </div>
-
           </div>
-
           <div>
             <button @click.prevent="sendRequest()"
               class="group relative w-full flex justify-center py-2 mt-6 px-4 border border-transparent text-sm font-medium rounded-3xl text-white bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -110,30 +106,23 @@
           </div>
         </form>
 
-
-        <div class="basis-2/5 grid grid-cols grid-rows justify-center justify-items-center bg-slate-900/80 rounded-3xl">
-          <h1 class="text-4xl text-white pt-5 font-bold ">Your artwork</h1>
-          <!-- <p class="text-xl">Artwork name: {{ prompt }}</p> -->
-          <!-- <img src="" class=" bg-gray-100 rounded-lg animate-spin" /> -->
-          <!-- <img src="http://localhost:8000/gen?lastmod=12345678" /> -->
-          <div class="grid bg-base-300 place-items-center rounded-3xl " style="height: 370px; width: 370px;">
+        <div class="basis-2/5 grid grid-cols grid-rows justify-center justify-items-center bg-stone-900/90 rounded-3xl">
+          <h1
+            class="text-4xl  pt-5 font-bold text-transparent mb-3 pb-3 bg-clip-text bg-gradient-to-r from-blue-500 to-fuchsia-500">
+            Your artwork</h1>
+          <div class="grid bg-base-300 place-items-center border-2 border-violet-700 rounded-3xl "
+            style="height: 370px; width: 370px;">
 
             <div id="loader-bar" name="loader-bar" style="display: none;">
               <loading />
               <h1 class="justify-content-center text-xl">loading...</h1>
             </div>
             <!-- <img src="response"> -->
-            <img :src="src" id="imagen" style="display: block">
-
-
+            <img :src="src" id="imagen" style="display: none">
           </div>
-
-
-          <!-- <div>
-            <button class="btn btn-square loading p-20 rounded-2xl bg-purple-400"></button>
-          </div> -->
-          <button @click="download()"
-            class="btn justify-center px-24 mt-2 rounded-3xl text-white bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <button @click="download()" id="download"
+            class="btn justify-center px-24 mt-2 rounded-3xl text-white bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            disabled>
             <h1 class="text-xl text-white font-bold ">Download</h1>
           </button>
 
@@ -141,8 +130,6 @@
       </div>
     </div>
   </div>
-
-
 </template>
 
 <script lang="ts">
@@ -158,8 +145,9 @@ const nanoid = customAlphabet('123456789', 6)
 export default defineComponent({
   data() {
     return {
+      min: 0,
       selectfile: null,
-      src: `http://127.0.0.1:8000/gen/generate?lastmod=${nanoid()}`
+      src: `http://127.0.0.1:8000/gen/generate?lastmod=${nanoid()}`,
     }
   },
   methods: {
@@ -187,9 +175,7 @@ export default defineComponent({
     const prompt: Ref<string> = ref("");
     const selectedStyle: Ref<number> = ref(1);
     const selectedFile: Ref<File | null> = ref(null);
-
     const IDsession = ref('')
-
 
     const onStyleClicked = (styleId: number): void => {
       if (styleId & selectedStyle.value & 1) {
@@ -218,38 +204,7 @@ export default defineComponent({
     }
     const sendRequest = async () => {
       document.getElementById('loader-bar').style.display = 'block';
-      document.getElementById('imagen').style.display = 'none';
-
-      // var ws = new WebSocket("ws://localhost:8000/ws");
-      // ws.onmessage = function (event) {
-      // };
-      // function sendMessage(event) {
-      //   var input = document.getElementById("messageText")
-      //   ws.send(input.value)
-      //   input.value = ''
-      //   event.preventDefault()
-      // }
-
-      // try {
-      //   const form = new FormData()
-
-      //   if (selectedFile.value != null) {
-      //     form.append('image', selectedFile.value, selectedFile.value.toString())
-      //     await ky.post(`http://localhost:8000/gen/uploadimage`, {
-      //       body: form,
-      //       headers: {
-      //         "Content-Type": "multipart/form-data",
-      //       },
-
-      //     })
-
-      //   } else {
-      //     await ky.post(`http://localhost:8000/uploadimage`)
-      //   }
-      // } catch (e) {
-      //   console.error(e)
-      // }
-
+      // document.getElementById('imagen').style.display = 'none';
       const idresponse = await ky.post(`http://127.0.0.1:8000/gen`
       ).json<{ massage: string, generated_image_id: string }>()
 
@@ -262,22 +217,16 @@ export default defineComponent({
           FILEform.append('image', selectedFile.value)
           await ky.post(`http://127.0.0.1:8000/gen/uploadimage/${IDsession.value}`, {
             body: FILEform,
-            // headers: {
-            //   "Content-Type": "multipart/form-data",
-            // },
           })
           console.log('success')
         } else {
-          // await ky.post(`http://127.0.0.1:8000/gen/uploadimage/${IDsession.value}`,)
         }
-
       } catch (e) {
         console.error(e)
       }
 
       try {
         if (prompt.value != "") {
-
           const response = await ky.post(`http://127.0.0.1:8000/gen/generate/${IDsession.value}`, {
             timeout: false,
             json: {
@@ -287,57 +236,32 @@ export default defineComponent({
             headers: {
               'content-type': 'application/json'
             }
-
           })
-
           if (response.status == 200) {
             document.getElementById('loader-bar').style.display = 'none';
             document.getElementById("imagen").style.display = 'block';
-            setInterval(function () {
-              location.reload();
-            }, 1000)
+            document.getElementById("download").disabled = false;
+            const imagefive = document.getElementById("imagen");
+            imagefive.src = `http://127.0.0.1:8000/gen/generate?lastmod=${nanoid()}`;
+            setTimeout(function () {
+              imagefive.src = `http://127.0.0.1:8000/gen/generate?lastmod=${nanoid()}`;
+            }, 5000);
             return {
               src: `http://127.0.0.1:8000/gen/generate?lastmod=${nanoid()}`
-
             }
-            // const imagedresponse = ky.get(`http://localhost:8000/gen/generate?lastmod=${nanoid()}`, {
-            // }).blob();
-            // return {
-            //   src: imagedresponse
-            // }
           }
           return response
         };
       } catch (e) {
         console.error(e)
       }
-
-
-
-
       router.push({
         name: "display gen image",
         params: {
           generatedImageId: IDsession.value
         }
       })
-
-      // const imageget = await ky.get('http://localhost:8000/gen', {
-      // });
-      // console.log(response);
-      // console.log(responseimage)
-      // const imagedresponse = await ky.get("http://localhost:8000/gen", {}).blob();
-      // console.log(imagedresponse);
-      // returnedImage.value = imagedresponse
     };
-
-
-
-    // const imagedresponse = ky.get("http://localhost:8000/gen?lastmod=", {
-    // }).blob();
-    // console.log(imagedresponse);
-
-
     return {
       products,
       prompt,
@@ -345,10 +269,15 @@ export default defineComponent({
       selectedStyle,
       onStyleClicked,
       onFileSelected,
-      // imagedresponse,
-      // src: `http://127.0.0.1:8000/gen/generate?lastmod=${nanoid()}`
     };
   },
   components: { Loading }
 })
 </script>
+<style>
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden
+}
+</style>

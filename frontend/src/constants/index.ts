@@ -47,5 +47,11 @@ export const products = [
         imageSrc: 'https://i.imgur.com/RSGzQVh.png',
         imagestyle: 'Shape',
     },
+    {
+        id: 9,
+        name: 'Water paint',
+        imageSrc: 'https://i.imgur.com/RW5vvEQ.png',
+        imagestyle: 'Water paint',
+    },
     // More products...
 ]

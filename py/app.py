@@ -57,7 +57,6 @@ app = FastAPI()
 origins = [
     '*'
 ]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -76,14 +75,6 @@ async def root():
 def generate_id():
 
     generated_image_id = nanoid.generate(alphabet='1234567890abcdef', size=10)
-
-    # db.set(generated_image_id, {
-    #     'prompt_text': body.prompt,
-    #     'style': body.style
-    # })
-
-    # db.dump()
-
     return {
         'massage': 'SUCCESS',
         'generated_image_id': generated_image_id
@@ -92,14 +83,7 @@ def generate_id():
 
 @ app.post('/gen/uploadimage/{generated_image_id}')
 def upload(generated_image_id: str, image: Optional[UploadFile] = File(None)):
-    # if image is None:
-    #     return{
-    #         'massage': 'SUCCESS but no image was uploaded',
-
-    #     }
     file_location = f'./image'
-
-    # pathlib.Path(file_location).mkdir(exist_ok=True, parents=True)
 
     file_location += f'/image.png'
 
@@ -299,7 +283,7 @@ def generate(prompt_text: PostUserPrompt):
     # model = "vqgan_imagenet_f16_16384"
     model = "vqgan_imagenet_f16_16384"
     modelo = model
-    interval_image = 50  # @param {type:"number"}
+    interval_image = 25  # @param {type:"number"}
     intervalo_imagenes = interval_image
     imageFile = pathlib.Path(
         "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/image.png")
@@ -311,7 +295,7 @@ def generate(prompt_text: PostUserPrompt):
     objective_image = ""  # @param {type:"string"}
     imagenes_objetivo = objective_image
     seed = -1  # @param {type:"number"}
-    max_iterations = 100  # @param {type:"number"}
+    max_iterations = 150  # @param {type:"number"}
     max_iteraciones = max_iterations
     input_images = ""
 
@@ -358,7 +342,6 @@ def generate(prompt_text: PostUserPrompt):
         display_freq=intervalo_imagenes,
         seed=seed,
     )
-
     # @title 5) Run the Art Generator :)
 
     text_prompts = ['AtlasNovaZ']
@@ -473,8 +456,6 @@ def generate(prompt_text: PostUserPrompt):
                 seed), {"prop_array_is_ordered": True, "prop_value_is_array": True})
             imagen.xmp.append_array_item(libxmp.consts.XMP_NS_DC, 'input_images', str(
                 input_images), {"prop_array_is_ordered": True, "prop_value_is_array": True})
-            # for frases in args.prompts:
-            #    imagen.xmp.append_array_item(libxmp.consts.XMP_NS_DC, 'Prompt' ,frases, {"prop_array_is_ordered":True, "prop_value_is_array":True})
             imagen.close()
 
         def add_stegano_data(filename):
@@ -497,7 +478,6 @@ def generate(prompt_text: PostUserPrompt):
             TF.to_pil_image(out[0].cpu()).save('progress.png')
             add_stegano_data('progress.png')
             add_xmp_data('progress.png')
-            # display.display(display.Image('progress.png'))
         global i
 
         def ascend_txt():
@@ -544,30 +524,15 @@ def generate(prompt_text: PostUserPrompt):
         except KeyboardInterrupt:
             pass
 
-    # device = torch.device("cuda")
-
-    # return FileResponse('progress.png')
     if os.path.isfile(imageFile):
         os.remove(imageFile)
         print("Image already exists")
     else:
         print("The file does not exist")
-    # pathlib.Path(
-    #     "/home/atlasnovaz/Documents/GitHub/P-Art/py/image/image.png").unlink()
-
     return FileResponse('progress.png')
-    # return prompt_text
 
 
 @ app.get("/gen/generate")
 async def read_gen_file():
 
     return FileResponse('progress.png')
-
-
-@ app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Message text was: {data}")
