@@ -204,7 +204,7 @@ export default defineComponent({
     }
     const sendRequest = async () => {
       document.getElementById('loader-bar').style.display = 'block';
-      // document.getElementById('imagen').style.display = 'none';
+      document.getElementById('imagen').style.display = 'none';
       const idresponse = await ky.post(`http://127.0.0.1:8000/gen`
       ).json<{ massage: string, generated_image_id: string }>()
 
